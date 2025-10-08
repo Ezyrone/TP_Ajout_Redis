@@ -1,15 +1,19 @@
-# Chat Multi-Salons (Socket.IO)
+# Chat Multi-Salons
 
-Application Node.js simple qui illustre la gestion de salons multiples avec Socket.IO et Express. Chaque salon conserve un historique court des derniers échanges et se supprime automatiquement lorsqu’il n’a plus de participants.
+> Expérimenter la discussion temps réel avec des salons dynamiques, un historique léger et une interface moderne animée.
 
-## Fonctionnalités
+| Section | Contenu |
+| --- | --- |
+| **Stack** | Node.js 18+, Express, Socket.IO |
+| **Interface** | Glassmorphism, toasts, navigation fluide entre salons |
+| **Serveur** | Création/fermeture automatique des salons, historique limité à 50 messages |
 
-- Création et sélection de salons en temps réel.
-- Pseudo configurable côté client (persistant pendant la session).
-- Notifications d’arrivée/départ et historique remis lors de la connexion.
-- Interface responsive avec liste des salons et compteur de participants.
+## Fonctionnalités clés
 
-
+- Création et sélection d’un salon en temps réel (avec compteur d’utilisateurs).
+- Pseudo configurable côté client et conservé pendant la session socket.
+- Historique court partagé dès l’arrivée dans un salon.
+- Notifications d’entrée/sortie pour garder tout le monde informé.
 
 ## Installation
 
@@ -17,25 +21,28 @@ Application Node.js simple qui illustre la gestion de salons multiples avec Sock
 npm install
 ```
 
-## Lancement
+## Démarrage rapide
 
 ```bash
 node index.js
 ```
 
-Le serveur écoute par défaut sur `http://localhost:3000/`.
+Ensuite, rendez-vous sur `http://localhost:3000`.
 
+## Scénario de test recommandé
+
+1. Ouvrir deux onglets/navigateurs sur `http://localhost:3000`.
+2. Choisir un pseudo dans chaque onglet.
+3. Créer un salon depuis le premier onglet puis le rejoindre depuis le second.
+4. Échanger des messages et vérifier la synchronisation (messages + toasts).
+5. Quitter le salon pour constater la notification et la fermeture automatique si nécessaire.
 
 ## Structure des fichiers
 
-- `index.js` : serveur Express + Socket.IO, gestion des salons et de l’historique.
-- `index.html` : interface client (formulaires pseudo/salon, flux de messages).
-- `style.css` : thème sombre, grille responsive et toast de notifications.
+- `index.js` : logique serveur (Express + Socket.IO, gestion des salons et de l’historique).
+- `index.html` : interface utilisateur et scripts Socket.IO côté client.
+- `style.css` : thème modernisé (glassmorphism, transitions douces, responsive).
 
--
--
--
--
--
+---
 
-## Jory GRZESZCZAK - M2 AL - ESGI Grenoble
+_GRZESZCZAK Jory - M2 AL - ESGI Grenoble
