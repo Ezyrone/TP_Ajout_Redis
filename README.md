@@ -9,9 +9,7 @@ Application Node.js simple qui illustre la gestion de salons multiples avec Sock
 - Notifications d’arrivée/départ et historique remis lors de la connexion.
 - Interface responsive avec liste des salons et compteur de participants.
 
-## Prérequis
 
-- Node.js 18+ (Socket.IO 4 nécessite une version récente de Node).
 
 ## Installation
 
@@ -27,11 +25,6 @@ node index.js
 
 Le serveur écoute par défaut sur `http://localhost:3000/`.
 
-## Tester en local
-
-1. Ouvrez deux onglets (ou navigateurs) sur `http://localhost:3000/`.
-2. Saisissez un pseudo dans le panneau de gauche puis créez ou sélectionnez un salon.
-3. Vérifiez que les messages et notifications se synchronisent correctement dans les deux sessions.
 
 ## Structure des fichiers
 
@@ -39,3 +32,4 @@ Le serveur écoute par défaut sur `http://localhost:3000/`.
 - `index.html` : interface client (formulaires pseudo/salon, flux de messages).
 - `style.css` : thème sombre, grille responsive et toast de notifications.
 
+## Jory GRZESZCZAK - M2 AL - ESGI Grenoble
