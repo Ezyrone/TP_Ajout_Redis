@@ -9,6 +9,8 @@
   
   * { box-sizing: border-box; }
   
+  .hidden { display: none !important; }
+  
   body {
     margin: 0;
     font-family: "Segoe UI", Roboto, sans-serif;
@@ -31,6 +33,23 @@
     box-shadow: 0 6px 24px rgba(0,0,0,0.4);
   }
   
+  #layout {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+  
+  #rooms-panel {
+    flex: 0 0 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  
   h1 {
     text-align: center;
     margin: 0 0 20px;
@@ -51,6 +70,17 @@
     color: var(--text);
   }
   
+  #form-username,
+  #form-create-room {
+    display: flex;
+    gap: 8px;
+  }
+
+  #form-username button,
+  #form-create-room button {
+    flex-shrink: 0;
+  }
+  
   input:focus {
     outline: none;
     border-color: var(--primary);
@@ -69,21 +99,88 @@
   
   button:hover { background: #1f6feb; }
   
+  .rooms-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  
+  .room-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    max-height: 260px;
+  }
+  
+  .room-button {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  
+  .room-button:hover {
+    border-color: var(--primary);
+  }
+  
+  .room-button.active {
+    border-color: var(--primary);
+    background: rgba(88, 166, 255, 0.12);
+  }
+  
+  .room-name {
+    font-weight: 600;
+  }
+  
+  .room-count {
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+  
+  .hint {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+  
+  #chat-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
   #messages {
     list-style: none;
-    margin: 20px 0;
-    padding: 0;
-    max-height: 350px;
+    margin: 0;
+    padding: 16px;
+    flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg);
   }
   
   #messages li {
     padding: 8px 12px;
     border-radius: 12px;
-    max-width: 70%;
+    max-width: 75%;
     word-wrap: break-word;
   }
   
@@ -113,12 +210,66 @@
     color: var(--bg);
     font-size: 14px;
   }
+
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
   
   .btn-leave {
-    margin-top: 10px;
-    width: 100%;
     background: #d73a49;
     color: white;
   }
   
   .btn-leave:hover { background: #b6232d; }
+
+  #toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 100;
+  }
+  
+  #toast.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .toast-info {
+    border-color: var(--primary);
+  }
+  
+  .toast-error {
+    border-color: #d73a49;
+    background: rgba(215, 58, 73, 0.15);
+    color: #ffd7d9;
+  }
+  
+  @media (max-width: 768px) {
+    body {
+      padding: 20px 10px;
+    }
+  
+    #layout {
+      flex-direction: column;
+    }
+  
+    #rooms-panel {
+      width: 100%;
+      flex: none;
+    }
+  
+    .room-list {
+      max-height: 200px;
+    }
+  }

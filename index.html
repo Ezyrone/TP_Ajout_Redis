@@ -9,104 +9,248 @@
 <body>
   <div id="chat-container">
     <h1>💬 Chat Multi-Salons</h1>
+    <div id="layout">
+      <aside id="rooms-panel">
+        <form id="form-username" autocomplete="off">
+          <input id="username-input" autocomplete="off" placeholder="Votre pseudo" />
+          <button type="submit">Enregistrer</button>
+        </form>
 
-    <div id="join-section">
-      <form id="form-join">
-        <input id="username-input" autocomplete="off" placeholder="Votre pseudo" required />
-        <input id="room-input" autocomplete="off" placeholder="Salon (ex: general, dev)" required />
-        <button type="submit">Rejoindre</button>
-      </form>
-    </div>
+        <div class="rooms-header">
+          <h2>Salons</h2>
+          <span id="rooms-count" class="badge">0</span>
+        </div>
+        <p id="no-room" class="hint">Aucun salon pour le moment, créez-en un 👇</p>
+        <ul id="room-list" class="room-list"></ul>
 
-    <div id="chat-section" class="hidden">
-      <p>Salon actuel : <span id="current-room-display" class="badge"></span></p>
-      <ul id="messages"></ul>
-      <form id="form-chat">
-        <input id="message-input" autocomplete="off" placeholder="Votre message..." />
-        <button type="submit">Envoyer</button>
-      </form>
-      <button id="leave-room" class="btn-leave">Quitter le salon</button>
+        <form id="form-create-room" autocomplete="off">
+          <input id="new-room-input" autocomplete="off" placeholder="Nouveau salon" />
+          <button type="submit">Créer</button>
+        </form>
+      </aside>
+
+      <section id="chat-section" class="hidden">
+        <div class="chat-header">
+          <p>Salon actuel : <span id="current-room-display" class="badge"></span></p>
+          <button id="leave-room" class="btn-leave" type="button">Quitter</button>
+        </div>
+        <ul id="messages"></ul>
+        <form id="form-chat" autocomplete="off">
+          <input id="message-input" autocomplete="off" placeholder="Votre message..." />
+          <button type="submit">Envoyer</button>
+        </form>
+      </section>
     </div>
   </div>
+
+  <div id="toast" class="hidden"></div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
 
-    const joinSection = document.getElementById('join-section');
-    const chatSection = document.getElementById('chat-section');
-    const formJoin = document.getElementById('form-join');
+    const usernameForm = document.getElementById('form-username');
     const usernameInput = document.getElementById('username-input');
-    const roomInput = document.getElementById('room-input');
+    const roomsCount = document.getElementById('rooms-count');
+    const roomList = document.getElementById('room-list');
+    const createRoomForm = document.getElementById('form-create-room');
+    const newRoomInput = document.getElementById('new-room-input');
+    const noRoomHint = document.getElementById('no-room');
+
+    const chatSection = document.getElementById('chat-section');
     const currentRoomDisplay = document.getElementById('current-room-display');
 
     const formChat = document.getElementById('form-chat');
     const messageInput = document.getElementById('message-input');
     const messages = document.getElementById('messages');
     const leaveBtn = document.getElementById('leave-room');
+    const toast = document.getElementById('toast');
 
     let currentUsername = '';
     let currentRoom = '';
+    let availableRooms = [];
+    let toastTimer;
 
-    // Rejoindre un salon
-    formJoin.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (usernameInput.value && roomInput.value) {
-        currentUsername = usernameInput.value.trim();
-        currentRoom = roomInput.value.trim();
-        currentRoomDisplay.textContent = currentRoom;
+    const showToast = (text, type = 'info') => {
+      if (!text) return;
+      toast.textContent = text;
+      toast.classList.remove('hidden', 'toast-info', 'toast-error', 'visible');
+      toast.classList.add(type === 'error' ? 'toast-error' : 'toast-info', 'visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('visible');
+        toast.classList.add('hidden');
+      }, 2600);
+    };
 
-        socket.emit('join room', { username: currentUsername, room: currentRoom });
+    const renderRooms = (rooms = []) => {
+      availableRooms = rooms.slice();
+      roomsCount.textContent = rooms.length;
+      roomList.innerHTML = '';
 
-        joinSection.classList.add('hidden');
-        chatSection.classList.remove('hidden');
-        messages.innerHTML = '';
+      if (rooms.length === 0) {
+        noRoomHint.classList.remove('hidden');
+        return;
       }
+
+      noRoomHint.classList.add('hidden');
+
+      rooms
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }))
+        .forEach((room) => {
+          const li = document.createElement('li');
+          const btn = document.createElement('button');
+          btn.className = `room-button${room.name === currentRoom ? ' active' : ''}`;
+          btn.type = 'button';
+          btn.dataset.room = room.name;
+
+          const title = document.createElement('span');
+          title.className = 'room-name';
+          title.textContent = room.name;
+
+          const count = document.createElement('span');
+          count.className = 'room-count';
+          count.textContent = room.users;
+
+          btn.appendChild(title);
+          btn.appendChild(count);
+          li.appendChild(btn);
+          roomList.appendChild(li);
+        });
+    };
+
+    const renderMessages = (history = []) => {
+      messages.innerHTML = '';
+      history.forEach((entry) => renderMessage(entry));
+    };
+
+    const renderMessage = (entry) => {
+      if (entry.room !== currentRoom) return;
+
+      const li = document.createElement('li');
+
+      if (entry.type === 'chat') {
+        const isSelf = entry.username === currentUsername;
+        li.className = isSelf ? 'msg-self' : 'msg-other';
+
+        const author = document.createElement('strong');
+        author.textContent = entry.username;
+        li.appendChild(author);
+
+        li.appendChild(document.createTextNode(` : ${entry.message}`));
+      } else {
+        li.className = 'msg-info';
+        li.textContent = entry.message;
+      }
+
+      messages.appendChild(li);
+      messages.scrollTop = messages.scrollHeight;
+    };
+
+    usernameForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const value = usernameInput.value.trim();
+      if (!value) {
+        showToast('Choisissez un pseudo pour discuter.', 'error');
+        return;
+      }
+      currentUsername = value;
+      showToast(`Pseudo enregistré : ${currentUsername}`);
     });
 
-    // Envoyer un message
+    roomList.addEventListener('click', (e) => {
+      const btn = e.target.closest('.room-button');
+      if (!btn) return;
+
+      const username = usernameInput.value.trim();
+      if (!username) {
+        showToast('Renseignez votre pseudo avant de rejoindre un salon.', 'error');
+        usernameInput.focus();
+        return;
+      }
+
+      const targetRoom = btn.dataset.room;
+      if (!targetRoom || targetRoom === currentRoom) return;
+
+      currentUsername = username;
+      socket.emit('join room', { username: currentUsername, room: targetRoom });
+    });
+
+    createRoomForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const roomName = newRoomInput.value.trim();
+      if (!roomName) {
+        showToast('Le nom du salon est requis.', 'error');
+        return;
+      }
+      socket.emit('create room', { room: roomName });
+      newRoomInput.value = '';
+    });
+
     formChat.addEventListener('submit', (e) => {
       e.preventDefault();
       const text = messageInput.value.trim();
-      if (text) {
-        socket.emit('chat message', {
-          username: currentUsername,
-          room: currentRoom,
-          message: text
-        });
-        messageInput.value = '';
-      }
-    });
+      if (!text || !currentRoom) return;
 
-    // Quitter le salon
-    leaveBtn.addEventListener('click', () => {
-      joinSection.classList.remove('hidden');
-      chatSection.classList.add('hidden');
       socket.emit('chat message', {
         username: currentUsername,
         room: currentRoom,
-        message: `${currentUsername} a quitté le salon.`
+        message: text
       });
+      messageInput.value = '';
+    });
+
+    leaveBtn.addEventListener('click', () => {
+      if (!currentRoom) return;
+      socket.emit('leave room');
+    });
+
+    const ensureRoomIsVisible = () => {
+      renderRooms(availableRooms);
+    };
+
+    socket.on('room list', (rooms) => {
+      renderRooms(Array.isArray(rooms) ? rooms : []);
+    });
+
+    socket.on('room joined', (data) => {
+      currentRoom = data.room;
+      currentUsername = data.username || currentUsername;
+      currentRoomDisplay.textContent = currentRoom;
+      chatSection.classList.remove('hidden');
+      renderMessages([]);
+      ensureRoomIsVisible();
+      messageInput.focus();
+      showToast(`Vous avez rejoint ${currentRoom}`);
+    });
+
+    socket.on('room history', (data) => {
+      if (data.room !== currentRoom) return;
+      renderMessages(Array.isArray(data.messages) ? data.messages : []);
+    });
+
+    socket.on('room left', (data) => {
+      if (data.room !== currentRoom && currentRoom) return;
       currentRoom = '';
-      messages.innerHTML = '';
+      currentRoomDisplay.textContent = '';
+      chatSection.classList.add('hidden');
+      renderMessages([]);
+      ensureRoomIsVisible();
     });
 
-    // Messages du salon
     socket.on('chat message', (data) => {
-      const item = document.createElement('li');
-      item.className = data.username === currentUsername ? 'msg-self' : 'msg-other';
-      item.innerHTML = `<strong>${data.username}</strong>: ${data.message}`;
-      messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;
+      if (data.room !== currentRoom) return;
+      renderMessage(data);
     });
 
-    // Notifications (join/leave)
     socket.on('room message', (data) => {
-      const item = document.createElement('li');
-      item.className = 'msg-info';
-      item.textContent = data.message;
-      messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;
+      if (data.room !== currentRoom) return;
+      renderMessage(data);
+    });
+
+    socket.on('room error', (data) => {
+      showToast(data?.message || 'Une erreur est survenue.', 'error');
     });
 
     socket.on('connect', () => console.log('✅ Connecté au serveur Socket.IO'));
