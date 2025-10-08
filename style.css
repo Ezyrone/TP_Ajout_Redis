@@ -1,0 +1,124 @@
+:root {
+    --bg: #0d1117;
+    --bg-light: #161b22;
+    --border: #30363d;
+    --primary: #58a6ff;
+    --success: #2ecc71;
+    --text: #e6edf3;
+  }
+  
+  * { box-sizing: border-box; }
+  
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  
+  #chat-container {
+    width: 100%;
+    max-width: 700px;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+  }
+  
+  h1 {
+    text-align: center;
+    margin: 0 0 20px;
+    color: var(--primary);
+  }
+  
+  form {
+    display: flex;
+    gap: 10px;
+  }
+  
+  input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+  }
+  
+  input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  
+  button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: var(--bg);
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  button:hover { background: #1f6feb; }
+  
+  #messages {
+    list-style: none;
+    margin: 20px 0;
+    padding: 0;
+    max-height: 350px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  #messages li {
+    padding: 8px 12px;
+    border-radius: 12px;
+    max-width: 70%;
+    word-wrap: break-word;
+  }
+  
+  .msg-self {
+    background: var(--success);
+    color: white;
+    align-self: flex-end;
+  }
+  
+  .msg-other {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    align-self: flex-start;
+  }
+  
+  .msg-info {
+    text-align: center;
+    font-style: italic;
+    opacity: 0.7;
+  }
+  
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--bg);
+    font-size: 14px;
+  }
+  
+  .btn-leave {
+    margin-top: 10px;
+    width: 100%;
+    background: #d73a49;
+    color: white;
+  }
+  
+  .btn-leave:hover { background: #b6232d; }

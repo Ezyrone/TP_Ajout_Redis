@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat Multi-Salons</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="chat-container">
+    <h1>💬 Chat Multi-Salons</h1>
+
+    <div id="join-section">
+      <form id="form-join">
+        <input id="username-input" autocomplete="off" placeholder="Votre pseudo" required />
+        <input id="room-input" autocomplete="off" placeholder="Salon (ex: general, dev)" required />
+        <button type="submit">Rejoindre</button>
+      </form>
+    </div>
+
+    <div id="chat-section" class="hidden">
+      <p>Salon actuel : <span id="current-room-display" class="badge"></span></p>
+      <ul id="messages"></ul>
+      <form id="form-chat">
+        <input id="message-input" autocomplete="off" placeholder="Votre message..." />
+        <button type="submit">Envoyer</button>
+      </form>
+      <button id="leave-room" class="btn-leave">Quitter le salon</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const joinSection = document.getElementById('join-section');
+    const chatSection = document.getElementById('chat-section');
+    const formJoin = document.getElementById('form-join');
+    const usernameInput = document.getElementById('username-input');
+    const roomInput = document.getElementById('room-input');
+    const currentRoomDisplay = document.getElementById('current-room-display');
+
+    const formChat = document.getElementById('form-chat');
+    const messageInput = document.getElementById('message-input');
+    const messages = document.getElementById('messages');
+    const leaveBtn = document.getElementById('leave-room');
+
+    let currentUsername = '';
+    let currentRoom = '';
+
+    // Rejoindre un salon
+    formJoin.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (usernameInput.value && roomInput.value) {
+        currentUsername = usernameInput.value.trim();
+        currentRoom = roomInput.value.trim();
+        currentRoomDisplay.textContent = currentRoom;
+
+        socket.emit('join room', { username: currentUsername, room: currentRoom });
+
+        joinSection.classList.add('hidden');
+        chatSection.classList.remove('hidden');
+        messages.innerHTML = '';
+      }
+    });
+
+    // Envoyer un message
+    formChat.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = messageInput.value.trim();
+      if (text) {
+        socket.emit('chat message', {
+          username: currentUsername,
+          room: currentRoom,
+          message: text
+        });
+        messageInput.value = '';
+      }
+    });
+
+    // Quitter le salon
+    leaveBtn.addEventListener('click', () => {
+      joinSection.classList.remove('hidden');
+      chatSection.classList.add('hidden');
+      socket.emit('chat message', {
+        username: currentUsername,
+        room: currentRoom,
+        message: `${currentUsername} a quitté le salon.`
+      });
+      currentRoom = '';
+      messages.innerHTML = '';
+    });
+
+    // Messages du salon
+    socket.on('chat message', (data) => {
+      const item = document.createElement('li');
+      item.className = data.username === currentUsername ? 'msg-self' : 'msg-other';
+      item.innerHTML = `<strong>${data.username}</strong>: ${data.message}`;
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    // Notifications (join/leave)
+    socket.on('room message', (data) => {
+      const item = document.createElement('li');
+      item.className = 'msg-info';
+      item.textContent = data.message;
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    socket.on('connect', () => console.log('✅ Connecté au serveur Socket.IO'));
+    socket.on('disconnect', () => console.log('❌ Déconnecté du serveur Socket.IO'));
+  </script>
+</body>
+</html>
