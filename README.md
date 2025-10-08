@@ -4,7 +4,7 @@
 
 | Section | Contenu |
 | --- | --- |
-| **Stack** | Node.js 18+, Express, Socket.IO |
+| **Stack** | Node.js 18+, Express, Socket.IO, Redis (Pub/Sub via ioredis) |
 | **Interface** | Glassmorphism, toasts, navigation fluide entre salons |
 | **Serveur** | Création/fermeture automatique des salons, historique limité à 50 messages |
 
@@ -14,6 +14,13 @@
 - Pseudo configurable côté client et conservé pendant la session socket.
 - Historique court partagé dès l’arrivée dans un salon.
 - Notifications d’entrée/sortie pour garder tout le monde informé.
+- Synchronisation inter-serveurs grâce à Redis Pub/Sub (messages, compteurs et historique partagés).
+
+## Pré-requis
+
+- Node.js 18 ou plus.
+- Une instance Redis (locale ou distante).
+  - Via Docker : `docker run --name my-redis -p 6379:6379 -d redis/redis-stack-server:latest`
 
 ## Installation
 
@@ -21,7 +28,7 @@
 npm install
 ```
 
-## Démarrage rapide
+## Démarrage rapide (instance unique)
 
 ```bash
 node index.js
@@ -29,17 +36,36 @@ node index.js
 
 Ensuite, rendez-vous sur `http://localhost:3000`.
 
+## Démarrer plusieurs instances
+
+1. Lancer Redis si ce n’est pas déjà fait.
+2. Dans plusieurs terminaux :
+
+```bash
+PORT=3000 node index.js        # première instance
+PORT=3001 node index.js        # deuxième instance
+# ajouter d'autres ports si besoin
+```
+
+> La variable d’environnement `REDIS_URL` permet de pointer vers une autre instance Redis (`redis://user:pass@host:port/db`).
+
 ## Scénario de test recommandé
 
-1. Ouvrir deux onglets/navigateurs sur `http://localhost:3000`.
+1. Ouvrir un onglet sur `http://localhost:3000` et un autre sur `http://localhost:3001`.
 2. Choisir un pseudo dans chaque onglet.
-3. Créer un salon depuis le premier onglet puis le rejoindre depuis le second.
-4. Échanger des messages et vérifier la synchronisation (messages + toasts).
-5. Quitter le salon pour constater la notification et la fermeture automatique si nécessaire.
+3. Créer un salon depuis l’un des onglets puis le rejoindre depuis l’autre (peu importe le serveur).
+4. Échanger des messages et vérifier la diffusion instantanée sur tous les clients.
+5. Quitter le salon pour observer les notifications et la mise à jour des compteurs sur les deux instances.
+
+## Comment Redis synchronise les serveurs ?
+
+- Chaque serveur publie les messages (chat et notifications système) sur un canal Redis (`chat:events`).
+- Tous les serveurs sont abonnés à ce canal : ils reçoivent les messages, les enregistrent dans Redis (liste limitée à 50 entrées) puis les diffusent à leurs clients connectés.
+- Les créations et compteurs de salons sont centralisés dans Redis (`chat:rooms` + `chat:room-user-counts`), ce qui garantit une vision partagée des salons sur toutes les instances.
 
 ## Structure des fichiers
 
-- `index.js` : logique serveur (Express + Socket.IO, gestion des salons et de l’historique).
+- `index.js` : logique serveur (Express + Socket.IO + Redis, gestion des salons et de l’historique).
 - `index.html` : interface utilisateur et scripts Socket.IO côté client.
 - `style.css` : thème modernisé (glassmorphism, transitions douces, responsive).
 
