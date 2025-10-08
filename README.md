@@ -16,11 +16,7 @@
 - Notifications d’entrée/sortie pour garder tout le monde informé.
 - Synchronisation inter-serveurs grâce à Redis Pub/Sub (messages, compteurs et historique partagés).
 
-## Pré-requis
 
-- Node.js 18 ou plus.
-- Une instance Redis (locale ou distante).
-  - Via Docker : `docker run --name my-redis -p 6379:6379 -d redis/redis-stack-server:latest`
 
 ## Installation
 
@@ -49,13 +45,7 @@ PORT=3001 node index.js        # deuxième instance
 
 > La variable d’environnement `REDIS_URL` permet de pointer vers une autre instance Redis (`redis://user:pass@host:port/db`).
 
-## Scénario de test recommandé
 
-1. Ouvrir un onglet sur `http://localhost:3000` et un autre sur `http://localhost:3001`.
-2. Choisir un pseudo dans chaque onglet.
-3. Créer un salon depuis l’un des onglets puis le rejoindre depuis l’autre (peu importe le serveur).
-4. Échanger des messages et vérifier la diffusion instantanée sur tous les clients.
-5. Quitter le salon pour observer les notifications et la mise à jour des compteurs sur les deux instances.
 
 ## Comment Redis synchronise les serveurs ?
 
