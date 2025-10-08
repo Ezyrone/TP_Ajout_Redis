@@ -45,4 +45,4 @@ Ensuite, rendez-vous sur `http://localhost:3000`.
 
 ---
 
-_GRZESZCZAK Jory - M2 AL - ESGI Grenoble
+GRZESZCZAK Jory - M2 AL - ESGI Grenoble
