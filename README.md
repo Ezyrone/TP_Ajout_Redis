@@ -32,7 +32,10 @@ Le serveur écoute par défaut sur `http://localhost:3000/`.
 - `index.html` : interface client (formulaires pseudo/salon, flux de messages).
 - `style.css` : thème sombre, grille responsive et toast de notifications.
 
+-
+-
+-
+-
+-
 
-````
-````
 ## Jory GRZESZCZAK - M2 AL - ESGI Grenoble
